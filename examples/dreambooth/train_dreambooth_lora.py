@@ -524,6 +524,9 @@ def parse_args(input_args=None):
         default=4,
         help=("The dimension of the LoRA update matrices."),
     )
+    parser.add_argument(
+    "--attn_implementation", type=str, default=None, help="Attention backend: 'eager', 'flash_attention_2', etc."
+    )
 
     if input_args is not None:
         args = parser.parse_args(input_args)
@@ -810,6 +813,7 @@ def main(args):
                 safety_checker=None,
                 revision=args.revision,
                 variant=args.variant,
+                attn_implementation=args.attn_implementation,
             )
             pipeline.set_progress_bar_config(disable=True)
 
@@ -1360,6 +1364,7 @@ def main(args):
                     revision=args.revision,
                     variant=args.variant,
                     torch_dtype=weight_dtype,
+                    attn_implementation=args.attn_implementation,
                 )
 
                 if args.pre_compute_text_embeddings:
@@ -1402,7 +1407,11 @@ def main(args):
         # Final inference
         # Load previous pipeline
         pipeline = DiffusionPipeline.from_pretrained(
-            args.pretrained_model_name_or_path, revision=args.revision, variant=args.variant, torch_dtype=weight_dtype
+            args.pretrained_model_name_or_path, 
+            revision=args.revision, 
+            variant=args.variant, 
+            torch_dtype=weight_dtype, 
+            attn_implementation=args.attn_implementation,
         )
 
         # load attention processors
