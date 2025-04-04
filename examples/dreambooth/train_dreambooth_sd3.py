@@ -617,6 +617,9 @@ def parse_args(input_args=None):
         ),
     )
     parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
+    parser.add_argument(
+    "--attn_implementation", type=str, default=None, help="Attention backend: 'eager', 'flash_attention_2', etc."
+    )
 
     if input_args is not None:
         args = parser.parse_args(input_args)
@@ -1056,6 +1059,7 @@ def main(args):
                 torch_dtype=torch_dtype,
                 revision=args.revision,
                 variant=args.variant,
+                attn_implementation=args.attn_implementation,
             )
             pipeline.set_progress_bar_config(disable=True)
 
@@ -1731,6 +1735,7 @@ def main(args):
                     revision=args.revision,
                     variant=args.variant,
                     torch_dtype=weight_dtype,
+                    attn_implementation=args.attn_implementation,
                 )
                 pipeline_args = {"prompt": args.validation_prompt}
                 images = log_validation(
@@ -1760,10 +1765,13 @@ def main(args):
                 text_encoder=text_encoder_one,
                 text_encoder_2=text_encoder_two,
                 text_encoder_3=text_encoder_three,
+                attn_implementation=args.attn_implementation,
             )
         else:
             pipeline = StableDiffusion3Pipeline.from_pretrained(
-                args.pretrained_model_name_or_path, transformer=transformer
+                args.pretrained_model_name_or_path, 
+                transformer=transformer, 
+                attn_implementation=args.attn_implementation
             )
 
         # save the pipeline
@@ -1776,6 +1784,7 @@ def main(args):
             revision=args.revision,
             variant=args.variant,
             torch_dtype=weight_dtype,
+            attn_implementation=args.attn_implementation,
         )
 
         # run inference
